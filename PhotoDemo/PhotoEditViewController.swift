@@ -53,6 +53,8 @@ class PhotoEditViewController: UIViewController {
     private var _arrow2: UIImageView!
     private var _arrow3: UIImageView!
     private var _arrow4: UIImageView!
+    private var _arrow5: UIImageView!
+    
     private var _scrollView: UIScrollView!
     
     private var _cropView: UIView!
@@ -132,7 +134,7 @@ private extension PhotoEditViewController{
     
     @objc func moveCropView(panGesture: UIPanGestureRecognizer) {
         let minX = CGRectGetMinX(self.imageHolderView.frame);
-        let maxX = CGRectGetMaxX(self.imageHolderView.frame) - CGRectGetWidth(self.cropView.frame);
+        let maxX = CGRectGetMaxX(self.scrollView.frame) - CGRectGetWidth(self.cropView.frame);
         let minY = CGRectGetMinY(self.imageHolderView.frame);
         let maxY = CGRectGetMaxY(self.imageHolderView.frame) - CGRectGetHeight(self.cropView.frame);
         
@@ -156,7 +158,7 @@ private extension PhotoEditViewController{
             frame.origin.y += endPoint.y - startPointCropView.y;
             frame.origin.x = min(maxX, max(frame.origin.x, minX));
             frame.origin.y = min(maxY, max(frame.origin.y, minY));
-            
+
             panGesture.view!.frame = frame;
             startPointCropView = endPoint;
         }
@@ -165,7 +167,6 @@ private extension PhotoEditViewController{
     
     }
     @objc func moveCorner(panGesture: UIPanGestureRecognizer) {
-        
         
         var minX = CGRectGetMinX(self.imageHolderView.frame) - ARROWBORDERWIDTH;
         var maxX = CGRectGetMaxX(self.imageHolderView.frame) - ARROWWIDTH + ARROWBORDERWIDTH;
@@ -235,7 +236,7 @@ private extension PhotoEditViewController{
                 frame.origin.x = maxX - frame.size.width;
                 frame.origin.y = maxY - frame.size.height;
                 self.cropView.frame = frame;
-                self.resetAllArrows()
+        
             
             case self.arrow2:
 
@@ -249,8 +250,6 @@ private extension PhotoEditViewController{
          
                 frame.origin.y = maxY - frame.size.height;
                 self.cropView.frame = frame;
-                
-                self.resetAllArrows()
             case self.arrow3:
     
                 let leftBottomPoint = CGPointMake(CGRectGetMinX(self.arrow3.frame) + ARROWBORDERWIDTH, CGRectGetMaxY(self.arrow3.frame) - ARROWBORDERWIDTH);
@@ -264,8 +263,7 @@ private extension PhotoEditViewController{
                 
                 frame.origin.x = maxX - frame.size.width;
                 self.cropView.frame = frame;
-                
-                self.resetAllArrows()
+            
             case self.arrow4:
 
                 let rightBottomPoint = CGPointMake(CGRectGetMaxX(self.arrow4.frame) - ARROWBORDERWIDTH, CGRectGetMaxY(self.arrow4.frame) - ARROWBORDERWIDTH);
@@ -275,11 +273,12 @@ private extension PhotoEditViewController{
     
                 frame.size.height = min(max(rightBottomPoint.x - minX, 2 * ARROWWIDTH + ARROWMINIMUMSPACE) , borderMaxY - minY);
                 frame.size.width = frame.size.height ;
-            self.cropView.frame = frame;
-                self.resetAllArrows()
+                self.cropView.frame = frame;
+            
         default:
             break
         }
+        self.resetAllArrows()
     }
     private func resetAllArrows() {
         self.arrow1.center = CGPointMake(CGRectGetMinX(self.cropView.frame) - ARROWBORDERWIDTH + ARROWWIDTH/2.0, CGRectGetMinY(self.cropView.frame) - ARROWBORDERWIDTH + ARROWHEIGHT/2.0);
@@ -339,6 +338,8 @@ private extension PhotoEditViewController{
         self.view.addSubview(arrow2)
         self.view.addSubview(arrow3)
         self.view.addSubview(arrow4)
+        
+        self.view.addSubview(arrow5)
         
         self.consraintsForSubViews();
     }
@@ -506,7 +507,26 @@ private extension PhotoEditViewController{
         }
     }
     
-    
+    private var arrow5: UIImageView {
+        get{
+            if _arrow5 == nil{
+                _arrow5 = UIImageView()
+                _arrow5.frame = CGRectMake(10, 72 + 26, 10, 10)
+                _arrow5.backgroundColor = UIColor.whiteColor()
+                _arrow5.image = UIImage(named: "arrow1")
+                _arrow5.contentMode = .ScaleAspectFit
+                _arrow5.userInteractionEnabled = true
+                
+                let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCorner(_:)))
+                _arrow5.addGestureRecognizer(pan)
+            }
+            return _arrow5
+            
+        }
+        set{
+            _arrow1 = newValue
+        }
+    }
 
     private var blackBgView: UIView {
         get{
