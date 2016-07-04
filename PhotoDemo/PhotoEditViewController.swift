@@ -31,11 +31,6 @@ class PhotoEditViewController: UIViewController {
     //存储不同缩放比例示意图的高亮图片名
     var proportionImageNameHLArr = ["cropHL_free", "cropHL_1_1", "cropHL_4_3", "cropHL_3_4", "cropHL_16_9", "cropHL_9_16"]
 
-    //存储不同缩放比例的按钮
-    var proportionBtnArr = NSMutableArray()
-
-    //当前待裁剪图片的高宽比
-    var imageHWFactor: CGFloat = 0
     
     var oringinImage: UIImage?
     /// private
@@ -44,12 +39,6 @@ class PhotoEditViewController: UIViewController {
     private var _editPhotoBtn: UIButton!
     private var _effectPhotoBtn: UIButton!
     
-    let CROPPROPORTIONIMAGEWIDTH: CGFloat = 30.0
-    let CROPPROPORTIONIMAGESPACE: CGFloat = 48.0
-    let CROPPROPORTIONIMAGEPADDING: CGFloat = 20.0
-    let SCREENWIDTH = UIScreen.mainScreen().bounds.width
-    let SCREENHEIGHT = UIScreen.mainScreen().bounds.height
-    let PADDING: CGFloat = 0.0
     let CROPVIEWBORDERWIDTH: CGFloat = 2.0
     //两个相邻箭头之间的最短距离
     let ARROWMINIMUMSPACE: CGFloat = 20
@@ -106,23 +95,7 @@ private extension PhotoEditViewController{
     private func loadImage() {
         
         let frame = self.imageHolderView.frame
-//        frame.size.width = min(frame.size.width, min(SCREENWIDTH - 2 * PADDING, SCREENHEIGHT  - 144 - 44));
-//        frame.size.height = frame.size.width;
-//        
-//        let center = CGPointMake(CGRectGetMidX(UIScreen.mainScreen().bounds), frame.size.height / 2.0 + (SCREENHEIGHT  - 144 - 44 - frame.size.height) / 2.0 + 44);
-//        imageHWFactor = self.oringinImage!.size.height / self.oringinImage!.size.width;
-//        if(imageHWFactor <= 1) {
-//            frame.size.height = imageHWFactor * frame.size.width;
-//        }
-//        else {
-//            frame.size.width = frame.size.height / imageHWFactor;
-//        }
-//        imageScale = self.oringinImage!.size.width / CGRectGetWidth(self.imageHolderView.frame);
-//        self.imageHolderView.frame = frame;
-//        self.imageHolderView.center = center;
         self.imageHolderView.image = self.oringinImage;
-//        self.imageHolderView.setNeedsUpdateConstraints()
-//        
 
         let imageSize = self.imageHolderView.image!.size;//获得图片的size
         var imageFrame = CGRectMake(0, 0,imageSize.width, imageSize.height);
@@ -139,12 +112,10 @@ private extension PhotoEditViewController{
         var maxScale: CGFloat = frame.size.height/imageFrame.size.height;
         maxScale = (frame.size.width/imageFrame.size.width>maxScale) ? (frame.size.width/imageFrame.size.width) : maxScale
         //超过了设置的最大的才算数
-        maxScale = maxScale>2.0 ? maxScale : 2.0;
+        maxScale = max(maxScale, 2.0)
         //初始化
-        self.scrollView.minimumZoomScale = 1;
         self.scrollView.maximumZoomScale = maxScale;
-        self.scrollView.zoomScale = 1.0;
-        
+
     }
     private func resetCropMask() {
         let path = UIBezierPath(rect: self.cropMaskView.bounds)
@@ -185,6 +156,7 @@ private extension PhotoEditViewController{
             frame.origin.y += endPoint.y - startPointCropView.y;
             frame.origin.x = min(maxX, max(frame.origin.x, minX));
             frame.origin.y = min(maxY, max(frame.origin.y, minY));
+            
             panGesture.view!.frame = frame;
             startPointCropView = endPoint;
         }
@@ -308,10 +280,7 @@ private extension PhotoEditViewController{
         default:
             break
         }
-        
-     
     }
-    
     private func resetAllArrows() {
         self.arrow1.center = CGPointMake(CGRectGetMinX(self.cropView.frame) - ARROWBORDERWIDTH + ARROWWIDTH/2.0, CGRectGetMinY(self.cropView.frame) - ARROWBORDERWIDTH + ARROWHEIGHT/2.0);
         self.arrow2.center = CGPointMake(CGRectGetMaxX(self.cropView.frame) + ARROWBORDERWIDTH - ARROWWIDTH/2.0, CGRectGetMinY(self.cropView.frame) - ARROWBORDERWIDTH + ARROWHEIGHT/2.0);
@@ -337,18 +306,17 @@ private extension PhotoEditViewController{
 }
 extension PhotoEditViewController: UIScrollViewDelegate{
     func scrollViewDidScroll(scrollView: UIScrollView) {
-        print(scrollView)
+        
         self.imageHolderView.center = centerOfScrollViewContent()
     }
     func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
         return self.imageHolderView
     }
     func scrollViewDidZoom(scrollView: UIScrollView)  {
-        
+    
         let offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width) ? (scrollView.bounds.size.width - scrollView.contentSize.width) * 0.5 : 0.0;
         let offsetY = (scrollView.bounds.size.height > scrollView.contentSize.height) ? (scrollView.bounds.size.height - scrollView.contentSize.height) * 0.5 : 0.0;
         self.imageHolderView.center = CGPointMake(scrollView.contentSize.width * 0.5 + offsetX,scrollView.contentSize.height * 0.5 + offsetY);
-
     }
     
     func centerOfScrollViewContent() -> CGPoint{
@@ -362,10 +330,15 @@ private extension PhotoEditViewController{
     private func configureViews(){
         self.edgesForExtendedLayout = .None
         self.view.backgroundColor = UIColor.whiteColor()
-        self.view.addSubview(self.blackBgView)
+//        self.view.addSubview(self.blackBgView)
         self.view.addSubview(self.scrollView)
+        self.view.addSubview(self.cropMaskView)
+        self.view.addSubview(self.cropView)
         
-//        self.view.addSubview(self.cropMaskView)
+        self.view.addSubview(arrow1)
+        self.view.addSubview(arrow2)
+        self.view.addSubview(arrow3)
+        self.view.addSubview(arrow4)
         
         self.consraintsForSubViews();
     }
@@ -384,16 +357,15 @@ private extension PhotoEditViewController{
         get{
             if _scrollView == nil{
                 _scrollView = UIScrollView()
-                _scrollView.frame = self.view.bounds
+                _scrollView.frame = CGRectMake(0, 0, self.view.bounds.width, self.view.bounds.height - 64)
                 _scrollView.backgroundColor = UIColor.orangeColor()
+                _scrollView.userInteractionEnabled = true
                 _scrollView.delegate = self
                 _scrollView.minimumZoomScale = 1
                 _scrollView.setZoomScale(1.0, animated: true)
                 _scrollView.maximumZoomScale = 2
                 
                 _scrollView.addSubview(self.imageHolderView)
-            
-                
                 let doubleTap = UITapGestureRecognizer(target: self, action: #selector(PhotoEditViewController.handleDoubleTap(_:)))
                 doubleTap.numberOfTapsRequired = 2;
                 _scrollView.addGestureRecognizer(doubleTap)
@@ -412,7 +384,6 @@ private extension PhotoEditViewController{
                 _imageHolderView.frame = _scrollView.bounds
                 _imageHolderView.clipsToBounds = true
                 _imageHolderView.contentMode = .ScaleAspectFit
-                
             }
             return _imageHolderView
             
@@ -425,15 +396,10 @@ private extension PhotoEditViewController{
         get{
             if _cropMaskView == nil{
                 _cropMaskView = UIView()
-                _cropMaskView.frame = CGRectMake(0, 0, SCREENWIDTH, SCREENHEIGHT - 100)
-                _cropMaskView.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.8)
-                
-                _cropMaskView.addSubview(self.cropView)
-                
-                _cropMaskView.addSubview(arrow1)
-                _cropMaskView.addSubview(arrow2)
-                _cropMaskView.addSubview(arrow3)
-                _cropMaskView.addSubview(arrow4)
+                _cropMaskView.frame = self.view.bounds
+                _cropMaskView.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.6)
+                _cropMaskView.userInteractionEnabled = false
+              
             }
             return _cropMaskView
             
@@ -628,9 +594,9 @@ private extension PhotoEditViewController{
     
     // MARK: - consraintsForSubViews
     private func consraintsForSubViews() {
-        //_blackBgView
-        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]));
-        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]))
+//        //_blackBgView
+//        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]));
+//        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]))
         
     }
     
