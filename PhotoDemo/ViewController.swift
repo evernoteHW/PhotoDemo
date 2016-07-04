@@ -201,8 +201,11 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-        print(image)
-        picker.dismissViewControllerAnimated(true, completion: nil)
+        picker.dismissViewControllerAnimated(true) {
+            let vc = SelectedImageViewController()
+            vc.oringinImage = image
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
     
 }
