@@ -74,18 +74,21 @@ class EffectPhotoViewController: UIViewController {
     }
   
     func Image(image: UIImage,withEffect effect: String) -> UIImage {
-        let ciImage = CIImage(image: image)
-    
-        let filter = CIFilter(name: effect as String,withInputParameters: [kCIInputImageKey:ciImage!])
-        filter?.setDefaults()
-        
-        let context = CIContext()
-        let outputImage = filter?.outputImage
-        let cgImage = context.createCGImage(outputImage!, fromRect: (outputImage?.extent)!)
-        let effetImage = UIImage(CGImage: cgImage)
-        
-        return effetImage;
-    }
+        var effetImage: UIImage?
+        //存在内存泄漏
+        autoreleasepool { 
+            let ciImage = CIImage(image: image)
+            let filter = CIFilter(name: effect as String,withInputParameters: [kCIInputImageKey:ciImage!])
+            filter?.setDefaults()
+            
+            let context = CIContext(options: nil)
+            let outputImage = filter?.outputImage
+            let cgImage = context.createCGImage(outputImage!, fromRect: (outputImage?.extent)!)
+            effetImage = UIImage(CGImage: cgImage)
+            
+        }
+        return effetImage!
+       }
     
 
 }

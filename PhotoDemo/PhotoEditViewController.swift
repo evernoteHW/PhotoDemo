@@ -717,18 +717,20 @@ private extension PhotoEditViewController{
 
     
     func imageFromView(theView: UIView, atFrame: CGRect) -> UIImage {
+        var theImage: UIImage?
+        autoreleasepool {
+            UIGraphicsBeginImageContext(theView.frame.size);
+            let context = UIGraphicsGetCurrentContext();
+            CGContextSaveGState(context);
+            UIRectClip(atFrame);
+            theView.layer.renderInContext(context!)
+            theImage = UIGraphicsGetImageFromCurrentImageContext();
+            let refImage = CGImageCreateWithImageInRect(theImage!.CGImage, atFrame)
+            theImage = UIImage(CGImage: refImage!)
+            UIGraphicsEndImageContext();
+        }
         
-        UIGraphicsBeginImageContext(theView.frame.size);
-        let context = UIGraphicsGetCurrentContext();
-        CGContextSaveGState(context);
-        UIRectClip(atFrame);
-        theView.layer.renderInContext(context!)
-        var theImage = UIGraphicsGetImageFromCurrentImageContext();
-        let refImage = CGImageCreateWithImageInRect(theImage.CGImage, atFrame)
-        theImage = UIImage(CGImage: refImage!)
-        UIGraphicsEndImageContext();
-        
-        return  theImage
+        return  theImage!
     }
     // MARK: - consraintsForSubViews
     private func consraintsForSubViews() {
