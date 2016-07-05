@@ -55,12 +55,22 @@ private extension SelectedImageViewController{
     // MARK: - views actions
     @objc func editPhotoBtnAction() {
         let vc = PhotoEditViewController()
-        vc.oringinImage = self.oringinImage
+        vc.oringinImage = self.imageHolderView.image
+        vc.block = {[weak self](image) in
+            if let strongSelf = self{
+                strongSelf.imageHolderView.image = image
+            }
+        }
         self.navigationController?.pushViewController(vc, animated: true)
     }
     @objc func effectPhotoBtnAction() {
         let vc = EffectPhotoViewController()
-        vc.oringinImage = self.oringinImage
+        vc.oringinImage = self.imageHolderView.image
+        vc.block = {[weak self](image) in
+            if let strongSelf = self{
+                strongSelf.imageHolderView.image = image
+            }
+        }
         self.navigationController?.pushViewController(vc, animated: true)
     }
     // MARK: - getter and setter
@@ -70,6 +80,7 @@ private extension SelectedImageViewController{
                 _imageHolderView = UIImageView()
                 _imageHolderView.translatesAutoresizingMaskIntoConstraints = false
                 _imageHolderView.contentMode = .ScaleAspectFit
+                _imageHolderView.backgroundColor = UIColor.orangeColor()
             }
             return _imageHolderView
             

@@ -9,35 +9,27 @@
 
 import UIKit
 
+typealias SelecteImageBlock = (image:UIImage)->Void
+
 class PhotoEditViewController: UIViewController {
     /// public
-    //记录左上角箭头移动的起始位置
-    var startPoint1: UnsafeMutablePointer<CGPoint> = UnsafeMutablePointer<CGPoint>.alloc(1)
-    //记录左上角箭头移动的起始位置
-    var startPoint2: UnsafeMutablePointer<CGPoint> = UnsafeMutablePointer<CGPoint>.alloc(1)
-    //记录左下角箭头移动的起始位置
-    var startPoint3: UnsafeMutablePointer<CGPoint> = UnsafeMutablePointer<CGPoint>.alloc(1)
-    //记录右下角箭头移动的起始位置
-    var startPoint4: UnsafeMutablePointer<CGPoint> = UnsafeMutablePointer<CGPoint>.alloc(1)
-    
     var startPoint: UnsafeMutablePointer<CGPoint> = UnsafeMutablePointer<CGPoint>.alloc(1)
     
     //记录透明区域移动的起始位置
     var startPointCropView: CGPoint = CGPointZero
-    var imageScale: CGFloat = 0.0
     
     //存储不同缩放比例示意图的图片名
     var proportionImageNameArr = ["crop_free", "crop_1_1", "crop_4_3", "crop_3_4", "crop_16_9", "crop_9_16"]
     //存储不同缩放比例示意图的高亮图片名
     var proportionImageNameHLArr = ["cropHL_free", "cropHL_1_1", "cropHL_4_3", "cropHL_3_4", "cropHL_16_9", "cropHL_9_16"]
-
+    var block: SelecteImageBlock?
     
     var oringinImage: UIImage?
     /// private
     private var _blackBgView: UIView!
-    private var _usePhotoBtn: UIButton!
-    private var _editPhotoBtn: UIButton!
-    private var _effectPhotoBtn: UIButton!
+    private var _cancelSelectedImageBtn: UIButton!
+    private var _confirmSelectedImageBtn: UIButton!
+    private var _testImageView: UIImageView!
     
     let CROPVIEWBORDERWIDTH: CGFloat = 2.0
     //两个相邻箭头之间的最短距离
@@ -54,6 +46,9 @@ class PhotoEditViewController: UIViewController {
     private var _arrow3: UIImageView!
     private var _arrow4: UIImageView!
     private var _arrow5: UIImageView!
+    private var _arrow6: UIImageView!
+    private var _arrow7: UIImageView!
+    private var _arrow8: UIImageView!
     
     private var _scrollView: UIScrollView!
     
@@ -68,8 +63,8 @@ class PhotoEditViewController: UIViewController {
         let  cropViewWidth = min(CGRectGetWidth(self.imageHolderView.frame), CGRectGetHeight(self.imageHolderView.frame));
         self.cropView.frame = CGRectMake(0, 0, cropViewWidth, cropViewWidth);
         self.cropView.center = self.imageHolderView.center;
-        self.cropView.layer.borderWidth = CROPVIEWBORDERWIDTH;
-        self.cropView.layer.borderColor = UIColor.whiteColor().CGColor;
+//        self.cropView.layer.borderWidth = CROPVIEWBORDERWIDTH;
+//        self.cropView.layer.borderColor = UIColor.whiteColor().CGColor;
         self.resetAllArrows()
         self.resetCropMask()
         
@@ -144,12 +139,22 @@ private extension PhotoEditViewController{
             self.arrow2.userInteractionEnabled = false;
             self.arrow3.userInteractionEnabled = false;
             self.arrow4.userInteractionEnabled = false;
+            
+            self.arrow5.userInteractionEnabled = false;
+            self.arrow6.userInteractionEnabled = false;
+            self.arrow7.userInteractionEnabled = false;
+            self.arrow8.userInteractionEnabled = false;
         }
         else if(panGesture.state == .Ended) {
             self.arrow1.userInteractionEnabled = true;
             self.arrow2.userInteractionEnabled = true;
             self.arrow3.userInteractionEnabled = true;
             self.arrow4.userInteractionEnabled = true;
+            
+            self.arrow5.userInteractionEnabled = true;
+            self.arrow6.userInteractionEnabled = true;
+            self.arrow7.userInteractionEnabled = true;
+            self.arrow8.userInteractionEnabled = true;
         }
         else if(panGesture.state == .Changed) {
             let endPoint = panGesture.locationInView(self.cropMaskView)
@@ -174,23 +179,42 @@ private extension PhotoEditViewController{
         var maxY = CGRectGetMaxY(self.imageHolderView.frame) - ARROWHEIGHT + ARROWBORDERWIDTH;
         
         switch panGesture.view as! UIImageView{
-            case self.arrow1 :
-                startPoint = startPoint1;
+            case self.arrow1:
                 maxY = CGRectGetMinY(self.arrow3.frame) - ARROWHEIGHT - ARROWMINIMUMSPACE;
                 maxX = CGRectGetMinX(self.arrow2.frame) - ARROWWIDTH - ARROWMINIMUMSPACE;
             case self.arrow2:
-                startPoint = startPoint2;
                 maxY = CGRectGetMinY(self.arrow4.frame) - ARROWHEIGHT - ARROWMINIMUMSPACE;
                 minX = CGRectGetMaxX(self.arrow1.frame) + ARROWMINIMUMSPACE;
             case self.arrow3:
-                startPoint = startPoint3;
                 minY = CGRectGetMaxY(self.arrow1.frame) + ARROWMINIMUMSPACE;
                 maxX = CGRectGetMinX(self.arrow4.frame) - ARROWWIDTH - ARROWMINIMUMSPACE;
             case self.arrow4:
-                startPoint = startPoint4;
                 minY = CGRectGetMaxY(self.arrow2.frame) + ARROWMINIMUMSPACE;
                 minX = CGRectGetMaxX(self.arrow3.frame) + ARROWMINIMUMSPACE;
+            case self.arrow5:
+                maxX = self.arrow7.frame.origin.x - 25
+                
+                minY = panGesture.view!.frame.origin.y
+                maxY = panGesture.view!.frame.origin.y
+            case self.arrow6:
 
+                minX = panGesture.view!.frame.origin.x
+                maxX = panGesture.view!.frame.origin.x
+            
+                minY = CGRectGetMaxY(self.arrow8.frame)
+            
+            case self.arrow7:
+                minX = CGRectGetMaxX(self.arrow5.frame)
+                
+                minY = panGesture.view!.frame.origin.y
+                maxY = panGesture.view!.frame.origin.y
+            
+            case self.arrow8:
+                minX = panGesture.view!.frame.origin.x
+                maxX = panGesture.view!.frame.origin.x
+            
+                maxY = CGRectGetMinY(self.arrow6.frame) - 22
+            
         default:
             break
         }
@@ -202,11 +226,15 @@ private extension PhotoEditViewController{
             case .Changed:
                 let endPoint = panGesture.locationInView(self.cropMaskView)
                 var frame = panGesture.view!.frame
+                
+                //移动的距离
                 frame.origin.x += endPoint.x - startPoint.memory.x
                 frame.origin.y += endPoint.y - startPoint.memory.y
                 frame.origin.x = min(maxX, max(frame.origin.x, minX));
                 frame.origin.y = min(maxY, max(frame.origin.y, minY));
+                print(frame)
                 panGesture.view!.frame = frame;
+                
                 startPoint.memory = endPoint;
             case .Ended:
                 self.cropView.userInteractionEnabled = true;
@@ -218,87 +246,88 @@ private extension PhotoEditViewController{
         self.resetCropMask()
     }
     func resetArrowsFollow(arrow: UIView) {
-    
-        let borderMinY = CGRectGetMinY(self.imageHolderView.frame);
-        let borderMaxY = CGRectGetMaxY(self.imageHolderView.frame);
-        
         switch arrow {
             case self.arrow1:
-        
-                let leftTopPoint = CGPointMake(CGRectGetMinX(self.arrow1.frame) + ARROWBORDERWIDTH, CGRectGetMinY(self.arrow1.frame) + ARROWBORDERWIDTH);
-                var frame = self.cropView.frame;
-                let maxX = CGRectGetMaxX(frame);
-                let maxY = CGRectGetMaxY(frame);
-        
-                frame.size.height = min(max(maxX - leftTopPoint.x, 2 * ARROWWIDTH + ARROWMINIMUMSPACE) , maxY - borderMinY);
-                frame.size.width = frame.size.height ;
-             
-                frame.origin.x = maxX - frame.size.width;
-                frame.origin.y = maxY - frame.size.height;
-                self.cropView.frame = frame;
-        
+                self.arrow2.center = CGPointMake(self.arrow2.center.x, self.arrow1.center.y);
+                self.arrow3.center = CGPointMake(self.arrow1.center.x, self.arrow3.center.y);
+            
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow1.center.y);
             
             case self.arrow2:
-
-                let rightTopPoint = CGPointMake(CGRectGetMaxX(self.arrow2.frame) - ARROWBORDERWIDTH, CGRectGetMinY(self.arrow2.frame) + ARROWBORDERWIDTH);
-                var frame = self.cropView.frame;
-                let minX = CGRectGetMinX(frame);
-                let maxY = CGRectGetMaxY(frame);
-           
-                frame.size.height = min(max(rightTopPoint.x - minX, 2 * ARROWWIDTH + ARROWMINIMUMSPACE) , maxY - borderMinY);
-                frame.size.width = frame.size.height ;
-         
-                frame.origin.y = maxY - frame.size.height;
-                self.cropView.frame = frame;
+                self.arrow1.center = CGPointMake(self.arrow1.center.x, self.arrow2.center.y);
+                self.arrow4.center = CGPointMake(self.arrow2.center.x, self.arrow4.center.y);
+            
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow1.center.y);
             case self.arrow3:
-    
-                let leftBottomPoint = CGPointMake(CGRectGetMinX(self.arrow3.frame) + ARROWBORDERWIDTH, CGRectGetMaxY(self.arrow3.frame) - ARROWBORDERWIDTH);
-                var frame = self.cropView.frame;
-                let maxX = CGRectGetMaxX(frame);
-                let minY = CGRectGetMinY(frame);
-        
-                frame.size.height = min(max(maxX - leftBottomPoint.x, 2 * ARROWWIDTH + ARROWMINIMUMSPACE) , borderMaxY - minY);
-                frame.size.width = frame.size.height ;
+                self.arrow1.center = CGPointMake(self.arrow3.center.x, self.arrow1.center.y);
+                self.arrow4.center = CGPointMake(self.arrow4.center.x, self.arrow3.center.y);
             
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow1.center.y);
+        case self.arrow4:
+                self.arrow2.center = CGPointMake(self.arrow4.center.x, self.arrow2.center.y);
+                self.arrow3.center = CGPointMake(self.arrow3.center.x, self.arrow4.center.y);
+            
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow1.center.y);
+            case self.arrow5:
+                self.arrow1.center = CGPointMake(self.arrow5.center.x, self.arrow1.center.y);
+                self.arrow3.center = CGPointMake(self.arrow5.center.x, self.arrow3.center.y);
                 
-                frame.origin.x = maxX - frame.size.width;
-                self.cropView.frame = frame;
-            
-            case self.arrow4:
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow2.center.y);
+            case self.arrow6:
+                self.arrow3.center = CGPointMake(self.arrow3.center.x , self.arrow6.center.y );
+                self.arrow4.center = CGPointMake(self.arrow4.center.x , self.arrow6.center.y);
+                
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
 
-                let rightBottomPoint = CGPointMake(CGRectGetMaxX(self.arrow4.frame) - ARROWBORDERWIDTH, CGRectGetMaxY(self.arrow4.frame) - ARROWBORDERWIDTH);
-                var frame = self.cropView.frame;
-                let minX = CGRectGetMinX(frame);
-                let minY = CGRectGetMinY(frame);
-    
-                frame.size.height = min(max(rightBottomPoint.x - minX, 2 * ARROWWIDTH + ARROWMINIMUMSPACE) , borderMaxY - minY);
-                frame.size.width = frame.size.height ;
-                self.cropView.frame = frame;
-            
+            case self.arrow7:
+                self.arrow2.center = CGPointMake(self.arrow7.center.x , self.arrow1.center.y);
+                self.arrow4.center = CGPointMake(self.arrow7.center.x, self.arrow3.center.y);
+                
+                self.arrow6.center = CGPointMake(self.cropView.center.x, self.arrow3.center.y);
+                self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow2.center.y);
+            case self.arrow8:
+                self.arrow1.center = CGPointMake(self.arrow1.center.x, self.arrow8.center.y );
+                self.arrow2.center = CGPointMake(self.arrow2.center.x, self.arrow8.center.y );
+                
+                self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+                self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+
         default:
             break
         }
-        self.resetAllArrows()
+     
+
     }
     private func resetAllArrows() {
         self.arrow1.center = CGPointMake(CGRectGetMinX(self.cropView.frame) - ARROWBORDERWIDTH + ARROWWIDTH/2.0, CGRectGetMinY(self.cropView.frame) - ARROWBORDERWIDTH + ARROWHEIGHT/2.0);
         self.arrow2.center = CGPointMake(CGRectGetMaxX(self.cropView.frame) + ARROWBORDERWIDTH - ARROWWIDTH/2.0, CGRectGetMinY(self.cropView.frame) - ARROWBORDERWIDTH + ARROWHEIGHT/2.0);
         self.arrow3.center = CGPointMake(CGRectGetMinX(self.cropView.frame) - ARROWBORDERWIDTH + ARROWWIDTH/2.0, CGRectGetMaxY(self.cropView.frame) + ARROWBORDERWIDTH - ARROWHEIGHT/2.0);
         self.arrow4.center = CGPointMake(CGRectGetMaxX(self.cropView.frame) + ARROWBORDERWIDTH - ARROWWIDTH/2.0, CGRectGetMaxY(self.cropView.frame) + ARROWBORDERWIDTH - ARROWHEIGHT/2.0);
+        self.arrow5.center = CGPointMake(self.arrow1.center.x, self.cropView.center.y);
+        self.arrow6.center = CGPointMake(self.cropView.center.x,self.arrow3.center.y);
+        self.arrow7.center = CGPointMake(self.arrow2.center.x, self.cropView.center.y);
+        self.arrow8.center = CGPointMake(self.cropView.center.x, self.arrow2.center.y);
+        
         self.view.layoutIfNeeded()
     }
     func resetCropView() {
        self.cropView.frame = CGRectMake(CGRectGetMinX(self.arrow1.frame) + ARROWBORDERWIDTH, CGRectGetMinY(self.arrow1.frame) + ARROWBORDERWIDTH, CGRectGetMaxX(self.arrow2.frame) - CGRectGetMinX(self.arrow1.frame) - ARROWBORDERWIDTH * 2, CGRectGetMaxY(self.arrow3.frame) - CGRectGetMinY(self.arrow1.frame) - ARROWBORDERWIDTH * 2);
     }
-    private func cropAreaInImage() -> CGRect  {
-        let cropAreaInImageView = self.cropMaskView.convertRect(self.cropView.frame, toView: self.imageHolderView)
-        var cropAreaInImage: CGRect = CGRectZero;
-        cropAreaInImage.origin.x = cropAreaInImageView.origin.x * imageScale;
-        cropAreaInImage.origin.y = cropAreaInImageView.origin.y * imageScale;
-        cropAreaInImage.size.width = cropAreaInImageView.size.width * imageScale;
-        cropAreaInImage.size.height = cropAreaInImageView.size.height * imageScale;
-        return cropAreaInImage;
-    }
+
     private func clickProportionBtn()  {
     
     }
@@ -329,17 +358,19 @@ private extension PhotoEditViewController{
     private func configureViews(){
         self.edgesForExtendedLayout = .None
         self.view.backgroundColor = UIColor.whiteColor()
-//        self.view.addSubview(self.blackBgView)
+        
         self.view.addSubview(self.scrollView)
         self.view.addSubview(self.cropMaskView)
         self.view.addSubview(self.cropView)
-        
+        self.view.addSubview(self.blackBgView)
         self.view.addSubview(arrow1)
         self.view.addSubview(arrow2)
         self.view.addSubview(arrow3)
         self.view.addSubview(arrow4)
-        
         self.view.addSubview(arrow5)
+        self.view.addSubview(arrow6)
+        self.view.addSubview(arrow7)
+        self.view.addSubview(arrow8)
         
         self.consraintsForSubViews();
     }
@@ -352,6 +383,19 @@ private extension PhotoEditViewController{
             scrollView.setZoomScale(1, animated: true)
         }
     }
+    @objc private func confirmSelectedImageBtnAction(){
+        
+        if let block = self.block{
+            let image = self.imageFromView(self.view, atFrame: CGRectMake(self.cropView.frame.origin.x + 2, self.cropView.frame.origin.y + 2, self.cropView.frame.size.width - 4, self.cropView.frame.size.height - 4))
+            block(image: image)
+        }
+        self.navigationController?.popViewControllerAnimated(true)
+    }
+    
+    @objc private func cancelSelectedImageBtnAction(){
+        self.navigationController?.popViewControllerAnimated(true)
+    }
+    
     // MARK: - getter and setter
    
     private var scrollView: UIScrollView {
@@ -418,6 +462,7 @@ private extension PhotoEditViewController{
                 
                 let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCropView(_:)))
                 _cropView.addGestureRecognizer(pan)
+                
             }
             return _cropView
         }
@@ -511,9 +556,8 @@ private extension PhotoEditViewController{
         get{
             if _arrow5 == nil{
                 _arrow5 = UIImageView()
-                _arrow5.frame = CGRectMake(10, 72 + 26, 10, 10)
-                _arrow5.backgroundColor = UIColor.whiteColor()
-                _arrow5.image = UIImage(named: "arrow1")
+                _arrow5.frame = CGRectMake(0, 0, 25, 22)
+                _arrow5.backgroundColor = UIColor.clearColor()
                 _arrow5.contentMode = .ScaleAspectFit
                 _arrow5.userInteractionEnabled = true
                 
@@ -524,10 +568,66 @@ private extension PhotoEditViewController{
             
         }
         set{
-            _arrow1 = newValue
+            _arrow5 = newValue
         }
     }
-
+    private var arrow6: UIImageView {
+        get{
+            if _arrow6 == nil{
+                _arrow6 = UIImageView()
+                _arrow6.frame = CGRectMake(0, 0, 25, 22)
+                _arrow6.backgroundColor = UIColor.clearColor()
+                _arrow6.contentMode = .ScaleAspectFit
+                _arrow6.userInteractionEnabled = true
+                
+                let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCorner(_:)))
+                _arrow6.addGestureRecognizer(pan)
+            }
+            return _arrow6
+            
+        }
+        set{
+            _arrow6 = newValue
+        }
+    }
+    private var arrow7: UIImageView {
+        get{
+            if _arrow7 == nil{
+                _arrow7 = UIImageView()
+                _arrow7.frame = CGRectMake(0, 0, 25, 22)
+                _arrow7.backgroundColor = UIColor.clearColor()
+                _arrow7.contentMode = .ScaleAspectFit
+                _arrow7.userInteractionEnabled = true
+                let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCorner(_:)))
+                _arrow7.addGestureRecognizer(pan)
+            }
+            return _arrow7
+            
+        }
+        set{
+            _arrow7 = newValue
+        }
+    }
+    private var arrow8: UIImageView {
+        get{
+            if _arrow8 == nil{
+                _arrow8 = UIImageView()
+                _arrow8.frame = CGRectMake(0, 0, 25, 22)
+                _arrow8.backgroundColor = UIColor.clearColor()
+        
+                _arrow8.contentMode = .ScaleAspectFit
+                _arrow8.userInteractionEnabled = true
+                
+                let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCorner(_:)))
+                _arrow8.addGestureRecognizer(pan)
+            }
+            return _arrow8
+            
+        }
+        set{
+            _arrow8 = newValue
+        }
+    }
     private var blackBgView: UIView {
         get{
             if _blackBgView == nil{
@@ -535,21 +635,23 @@ private extension PhotoEditViewController{
                 _blackBgView.translatesAutoresizingMaskIntoConstraints = false
                 _blackBgView.backgroundColor = UIColor.blackColor()
                 
-                _blackBgView.addSubview(self.usePhotoBtn)
-                _blackBgView.addSubview(self.editPhotoBtn)
-                _blackBgView.addSubview(self.effectPhotoBtn)
+                _blackBgView.addSubview(self.cancelSelectedImageBtn)
+                _blackBgView.addSubview(self.confirmSelectedImageBtn)
+    
+                _blackBgView.addSubview(self.testImageView)
                 
-                //_usePhotoBtn
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(==100)]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _usePhotoBtn]));
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _usePhotoBtn]))
+                //_cancelSelectedImageBtn
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view(==100)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _cancelSelectedImageBtn]));
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _cancelSelectedImageBtn]))
                 
-                //_editPhotoBtn
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(==60)]-120-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _editPhotoBtn]));
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _editPhotoBtn]))
+                //_testImageView
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-100-[view(==80)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _testImageView]));
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==80)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _testImageView]))
                 
-                //_effectPhotoBtn
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(==60)]-190-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _effectPhotoBtn]));
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _effectPhotoBtn]))
+                //_confirmSelectedImageBtn
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _confirmSelectedImageBtn]));
+                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _confirmSelectedImageBtn]))
+                
             }
             return _blackBgView
             
@@ -559,65 +661,80 @@ private extension PhotoEditViewController{
         }
     }
     
-    private var usePhotoBtn: UIButton {
+    private var testImageView: UIImageView {
         get{
-            if _usePhotoBtn == nil{
-                _usePhotoBtn = UIButton()
-                _usePhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _usePhotoBtn.backgroundColor = UIColor.orangeColor()
-                _usePhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _usePhotoBtn.setTitle("使用照片", forState: .Normal)
-                _usePhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+            if _testImageView == nil{
+                _testImageView = UIImageView()
+                _testImageView.translatesAutoresizingMaskIntoConstraints = false
+                _testImageView.backgroundColor = UIColor.greenColor()
+                _testImageView.contentMode = .ScaleAspectFit
             }
-            return _usePhotoBtn
+            return _testImageView
             
         }
         set{
-            _usePhotoBtn = newValue
+            _testImageView = newValue
         }
     }
     
-    private var editPhotoBtn: UIButton {
+    private var cancelSelectedImageBtn: UIButton {
         get{
-            if _editPhotoBtn == nil{
-                _editPhotoBtn = UIButton()
-                _editPhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _editPhotoBtn.backgroundColor = UIColor.yellowColor()
-                _editPhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _editPhotoBtn.setTitle("裁剪", forState: .Normal)
-                _editPhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+            if _cancelSelectedImageBtn == nil{
+                _cancelSelectedImageBtn = UIButton()
+                _cancelSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
+                _cancelSelectedImageBtn.backgroundColor = UIColor.orangeColor()
+                _cancelSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+                _cancelSelectedImageBtn.setTitle("取消", forState: .Normal)
+                _cancelSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                 _cancelSelectedImageBtn.addTarget(self, action: #selector(PhotoEditViewController.cancelSelectedImageBtnAction), forControlEvents: .TouchUpInside)
             }
-            return _editPhotoBtn
+            return _cancelSelectedImageBtn
             
         }
         set{
-            _editPhotoBtn = newValue
-        }
-    }
-    private var effectPhotoBtn: UIButton {
-        get{
-            if _effectPhotoBtn == nil{
-                _effectPhotoBtn = UIButton()
-                _effectPhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _effectPhotoBtn.backgroundColor = UIColor.redColor()
-                _effectPhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _effectPhotoBtn.setTitle("滤镜", forState: .Normal)
-                _effectPhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
-            }
-            return _effectPhotoBtn
-            
-        }
-        set{
-            _effectPhotoBtn = newValue
+            _cancelSelectedImageBtn = newValue
         }
     }
     
+    private var confirmSelectedImageBtn: UIButton {
+        get{
+            if _confirmSelectedImageBtn == nil{
+                _confirmSelectedImageBtn = UIButton()
+                _confirmSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
+                _confirmSelectedImageBtn.backgroundColor = UIColor.yellowColor()
+                _confirmSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+                _confirmSelectedImageBtn.setTitle("确定", forState: .Normal)
+                _confirmSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                _confirmSelectedImageBtn.addTarget(self, action: #selector(PhotoEditViewController.confirmSelectedImageBtnAction), forControlEvents: .TouchUpInside)
+            }
+            return _confirmSelectedImageBtn
+            
+        }
+        set{
+            _confirmSelectedImageBtn = newValue
+        }
+    }
+
+    
+    func imageFromView(theView: UIView, atFrame: CGRect) -> UIImage {
+        
+        UIGraphicsBeginImageContext(theView.frame.size);
+        let context = UIGraphicsGetCurrentContext();
+        CGContextSaveGState(context);
+        UIRectClip(atFrame);
+        theView.layer.renderInContext(context!)
+        var theImage = UIGraphicsGetImageFromCurrentImageContext();
+        let refImage = CGImageCreateWithImageInRect(theImage.CGImage, atFrame)
+        theImage = UIImage(CGImage: refImage!)
+        UIGraphicsEndImageContext();
+        
+        return  theImage
+    }
     // MARK: - consraintsForSubViews
     private func consraintsForSubViews() {
-//        //_blackBgView
-//        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]));
-//        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]))
-        
+        //_blackBgView
+        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]));
+        self.view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _blackBgView]))
     }
     
 }
