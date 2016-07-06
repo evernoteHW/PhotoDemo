@@ -26,6 +26,9 @@ import UIKit
         // Do any additional setup after loading the view.
     }
 
+    override func viewWillAppear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -80,7 +83,7 @@ private extension SelectedImageViewController{
                 _imageHolderView = UIImageView()
                 _imageHolderView.translatesAutoresizingMaskIntoConstraints = false
                 _imageHolderView.contentMode = .ScaleAspectFit
-                _imageHolderView.backgroundColor = UIColor.orangeColor()
+                _imageHolderView.backgroundColor = UIColor.blackColor()
             }
             return _imageHolderView
             
@@ -125,7 +128,7 @@ private extension SelectedImageViewController{
             if _usePhotoBtn == nil{
                 _usePhotoBtn = UIButton()
                 _usePhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _usePhotoBtn.backgroundColor = UIColor.orangeColor()
+                _usePhotoBtn.backgroundColor = UIColor.clearColor()
                 _usePhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
                 _usePhotoBtn.setTitle("使用照片", forState: .Normal)
                 _usePhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
@@ -143,7 +146,7 @@ private extension SelectedImageViewController{
             if _editPhotoBtn == nil{
                 _editPhotoBtn = UIButton()
                 _editPhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _editPhotoBtn.backgroundColor = UIColor.yellowColor()
+                _editPhotoBtn.backgroundColor = UIColor.clearColor()
                 _editPhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
                 _editPhotoBtn.setTitle("裁剪", forState: .Normal)
                 _editPhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
@@ -161,7 +164,7 @@ private extension SelectedImageViewController{
             if _effectPhotoBtn == nil{
                 _effectPhotoBtn = UIButton()
                 _effectPhotoBtn.translatesAutoresizingMaskIntoConstraints = false
-                _effectPhotoBtn.backgroundColor = UIColor.redColor()
+                _effectPhotoBtn.backgroundColor = UIColor.clearColor()
                 _effectPhotoBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
                 _effectPhotoBtn.setTitle("滤镜", forState: .Normal)
                 _effectPhotoBtn.titleLabel?.font = UIFont.systemFontOfSize(14)

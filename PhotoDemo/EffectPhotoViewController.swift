@@ -45,17 +45,28 @@ class EffectPhotoViewController: UIViewController {
         
         self.configureViews()
         
+        let dispatchQueue = dispatch_queue_create("ted.queue.next", DISPATCH_QUEUE_CONCURRENT);
+        let dispatchGroup = dispatch_group_create();
+
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
             //所有耗时操作放在该处处理
             for index in 0..<self.ljNamesArray.count{
-                let image = self.changeImage(self.oringinImage!, withIndex: index, effectArray: self.ljNamesArray)
-                self.ljImagesArray.append(image)
+                dispatch_group_async(dispatchGroup, dispatchQueue) {
+                    let image = self.changeImage(self.oringinImage!, withIndex: index, effectArray: self.ljNamesArray)
+                    self.ljImagesArray.append(image)
+                    print(index)
+                }
             }
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                //耗时操作执行完成，通知主线程更新UI
-                self.collectionView.reloadData()
+            dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), { 
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    //耗时操作执行完成，通知主线程更新UI
+                    self.collectionView.reloadData()
+                })
             })
         }
+    }
+    override func viewWillAppear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
     }
 
     override func didReceiveMemoryWarning() {
@@ -95,7 +106,7 @@ class EffectPhotoViewController: UIViewController {
 extension EffectPhotoViewController{
     private func configureViews(){
         self.edgesForExtendedLayout = .None
-        self.view.backgroundColor = UIColor.whiteColor()
+        self.view.backgroundColor = UIColor.blackColor()
         self.view.addSubview(self.collectionView)
         self.view.addSubview(self.imageHolderView)
         self.view.addSubview(self.cancelSelectedImageBtn)
@@ -166,10 +177,10 @@ extension EffectPhotoViewController{
             if _cancelSelectedImageBtn == nil{
                 _cancelSelectedImageBtn = UIButton()
                 _cancelSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
-                _cancelSelectedImageBtn.backgroundColor = UIColor.orangeColor()
-                _cancelSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _cancelSelectedImageBtn.setTitle("取消", forState: .Normal)
-                _cancelSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                _cancelSelectedImageBtn.backgroundColor = UIColor.clearColor()
+                _cancelSelectedImageBtn.setTitleColor(UIColor.redColor(), forState: .Normal)
+                _cancelSelectedImageBtn.setTitle("x", forState: .Normal)
+                _cancelSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(30)
                 _cancelSelectedImageBtn.addTarget(self, action: #selector(EffectPhotoViewController.cancelSelectedImageBtnAction), forControlEvents: .TouchUpInside)
             }
             return _cancelSelectedImageBtn
@@ -185,10 +196,10 @@ extension EffectPhotoViewController{
             if _confirmSelectedImageBtn == nil{
                 _confirmSelectedImageBtn = UIButton()
                 _confirmSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
-                _confirmSelectedImageBtn.backgroundColor = UIColor.yellowColor()
-                _confirmSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _confirmSelectedImageBtn.setTitle("确定", forState: .Normal)
-                _confirmSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                _confirmSelectedImageBtn.backgroundColor = UIColor.clearColor()
+                _confirmSelectedImageBtn.setTitleColor(UIColor.greenColor(), forState: .Normal)
+                _confirmSelectedImageBtn.setTitle("√", forState: .Normal)
+                _confirmSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(30)
                 _confirmSelectedImageBtn.addTarget(self, action: #selector(EffectPhotoViewController.confirmSelectedImageBtnAction), forControlEvents: .TouchUpInside)
             }
             return _confirmSelectedImageBtn

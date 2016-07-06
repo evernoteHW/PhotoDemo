@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		740B895D1D2CBB510053A0BF /* UIImage+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 740B895C1D2CBB510053A0BF /* UIImage+Test.m */; };
 		74A2EB3C1D2642B6005E21CB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A2EB3B1D2642B6005E21CB /* AppDelegate.swift */; };
 		74A2EB3E1D2642B6005E21CB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A2EB3D1D2642B6005E21CB /* ViewController.swift */; };
 		74A2EB411D2642B6005E21CB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 74A2EB3F1D2642B6005E21CB /* Main.storyboard */; };
@@ -57,6 +58,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		740B89591D2CBB320053A0BF /* PhotoDemo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PhotoDemo-Bridging-Header.h"; sourceTree = "<group>"; };
+		740B895B1D2CBB510053A0BF /* UIImage+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Test.h"; sourceTree = "<group>"; };
+		740B895C1D2CBB510053A0BF /* UIImage+Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Test.m"; sourceTree = "<group>"; };
 		74A2EB381D2642B6005E21CB /* PhotoDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		74A2EB3B1D2642B6005E21CB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		74A2EB3D1D2642B6005E21CB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -199,6 +203,9 @@
 				74A2EB7C1D267F47005E21CB /* cropHL_9_16.png */,
 				74A2EB7D1D267F47005E21CB /* cropHL_free.png */,
 				74A2EB7E1D267F47005E21CB /* test.jpg */,
+				740B89591D2CBB320053A0BF /* PhotoDemo-Bridging-Header.h */,
+				740B895B1D2CBB510053A0BF /* UIImage+Test.h */,
+				740B895C1D2CBB510053A0BF /* UIImage+Test.m */,
 			);
 			path = resources;
 			sourceTree = "<group>";
@@ -356,6 +363,7 @@
 				74A2EB3E1D2642B6005E21CB /* ViewController.swift in Sources */,
 				74A2EB931D2A072F005E21CB /* SelectedImageViewController.swift in Sources */,
 				74A2EB951D2A0D19005E21CB /* EffectPhotoViewController.swift in Sources */,
+				740B895D1D2CBB510053A0BF /* UIImage+Test.m in Sources */,
 				74A2EB3C1D2642B6005E21CB /* AppDelegate.swift in Sources */,
 				74A2EB6A1D266EFC005E21CB /* PhotoEditViewController.swift in Sources */,
 			);
@@ -499,10 +507,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = PhotoDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = jd.com.PhotoDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "PhotoDemo/resources/PhotoDemo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -510,10 +521,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = PhotoDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = jd.com.PhotoDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "PhotoDemo/resources/PhotoDemo-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -582,6 +595,7 @@
 				74A2EB621D2642B6005E21CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		74A2EB631D2642B6005E21CB /* Build configuration list for PBXNativeTarget "PhotoDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -590,6 +604,7 @@
 				74A2EB651D2642B6005E21CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		74A2EB661D2642B6005E21CB /* Build configuration list for PBXNativeTarget "PhotoDemoUITests" */ = {
 			isa = XCConfigurationList;
@@ -598,6 +613,7 @@
 				74A2EB681D2642B6005E21CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

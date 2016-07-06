@@ -8,53 +8,89 @@
 
 import UIKit
 import AssetsLibrary
+import Photos
 
 class ViewController: UIViewController {
     /// private
     private var _collectionView: UICollectionView!
-    //资源库管理类
-    private var assetsLibrary =  ALAssetsLibrary()
-    //保存照片集合
-    private var assets = [ALAsset]()
-    /// public
+    private var photoArray: [UIImage] = [UIImage]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+           self.configureViews()
+           photoArray = getAllPhotos()
         
-        var countOne = 0
-        //ALAssetsGroupSavedPhotos表示只读取相机胶卷（ALAssetsGroupAll则读取全部相簿）
-        assetsLibrary.enumerateGroupsWithTypes(ALAssetsGroupSavedPhotos, usingBlock: {
-            (group: ALAssetsGroup!, stop) in
-            print("is goin")
-            if group != nil
-            {
-                let assetBlock : ALAssetsGroupEnumerationResultsBlock = {
-                    (result: ALAsset!, index: Int, stop) in
-                    if result != nil
-                    {
-                        self.assets.append(result)
-                        countOne++
-                    }
-                }
-                group.enumerateAssetsUsingBlock(assetBlock)
-                print("assets:\(countOne)")
-                //collectionView网格重载数据
-                self.collectionView.reloadData()
-            }
-            }, failureBlock: { (fail) in
-                print(fail)
-        })
         
-        self.configureViews()
-        // Do any additional setup after loading the view, typically from a nib.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
 }
+extension ViewController: PHPhotoLibraryChangeObserver{
+    private func getAllPhotos() -> [UIImage]{
+        
+        PHPhotoLibrary.sharedPhotoLibrary().registerChangeObserver(self)
+        let allOptions = PHFetchOptions()
+        allOptions.sortDescriptors = [NSSortDescriptor.init(key: "creationDate", ascending: true)]
+        let allResults = PHAsset.fetchAssetsWithOptions(allOptions)
+        
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .HighQualityFormat
+        
+        for index in 0..<allResults.count {
+            PHCachingImageManager.defaultManager().requestImageForAsset(allResults[index] as! PHAsset, targetSize: CGSizeZero, contentMode: .AspectFit, options: options) { (result: UIImage?, dictionry: Dictionary?) in
+                if let result_ = result{
+                    self.photoArray.append(result_)
+                }
+            }
+        }
+        
+         return  photoArray
 
+
+    }
+    func photoLibraryDidChange(changeInstance: PHChange){
+        getAllPhotos()
+    }
+//   private func getAllPhotosBeforIOS8() -> [UIImage]{
+//    
+//        var photoArray = [UIImage]()
+////          ALAssetsGroupSavedPhotos表示只读取相机胶卷（ALAssetsGroupAll则读取全部相簿）
+//        var assets = [ALAsset]()
+//        var countOne = 0
+//        var assetsLibrary =  ALAssetsLibrary()
+//        assetsLibrary.enumerateGroupsWithTypes(ALAssetsGroupSavedPhotos, usingBlock: {
+//            (group: ALAssetsGroup!, stop) in
+//            print("is goin")
+//            if group != nil
+//            {
+//                let assetBlock : ALAssetsGroupEnumerationResultsBlock = {
+//                    (result: ALAsset!, index: Int, stop) in
+//                    if result != nil
+//                    {
+//                        assets.append(result)
+//                        
+//                        let myAsset = assets[countOne]
+//                        let image = UIImage(CGImage:myAsset.thumbnail().takeUnretainedValue())
+//                        photoArray.append(image)
+//                        
+//                        countOne++
+//                    }
+//                }
+//                group.enumerateAssetsUsingBlock(assetBlock)
+//                print("assets:\(countOne)")
+//                //collectionView网格重载数据
+//                
+//            }
+//            }, failureBlock: { (fail) in
+//                print(fail)
+//        })
+//        return photoArray
+//    }
+    
+}
 class PhotoCollectionViewLayout: UICollectionViewLayout {
     
     private var itemsArrayM = [UICollectionViewLayoutAttributes]()
@@ -125,7 +161,7 @@ private extension ViewController{
                 _collectionView.translatesAutoresizingMaskIntoConstraints = false
                 _collectionView.dataSource = self
                 _collectionView.delegate = self
-                _collectionView.backgroundColor = UIColor.yellowColor()
+                _collectionView.backgroundColor = UIColor.whiteColor()
                 _collectionView.registerClass(UICollectionViewCell.self, forCellWithReuseIdentifier: "UICollectionViewCellID")
             }
             return _collectionView
@@ -145,7 +181,7 @@ private extension ViewController{
 extension ViewController:UICollectionViewDataSource,UICollectionViewDelegate{
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{
-        return self.assets.count + 1
+        return self.photoArray.count + 1
     }
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("UICollectionViewCellID", forIndexPath: indexPath)
@@ -154,8 +190,8 @@ extension ViewController:UICollectionViewDataSource,UICollectionViewDelegate{
         case 0:
             break
         default:
-            let myAsset = assets[indexPath.item - 1]
-            let image = UIImage(CGImage:myAsset.thumbnail().takeUnretainedValue())
+            
+            let image = photoArray[indexPath.item - 1]
             
             var imageView = (cell.contentView.viewWithTag(99) as? UIImageView)
             

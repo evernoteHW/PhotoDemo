@@ -29,7 +29,6 @@ class PhotoEditViewController: UIViewController {
     private var _blackBgView: UIView!
     private var _cancelSelectedImageBtn: UIButton!
     private var _confirmSelectedImageBtn: UIButton!
-    private var _testImageView: UIImageView!
     
     let CROPVIEWBORDERWIDTH: CGFloat = 2.0
     //两个相邻箭头之间的最短距离
@@ -39,7 +38,7 @@ class PhotoEditViewController: UIViewController {
     let ARROWWIDTH: CGFloat = 25
     let ARROWHEIGHT: CGFloat = 22
     
-    
+    private var _testImageView: UIImageView!
     private var _imageHolderView: UIImageView!
     private var _arrow1: UIImageView!
     private var _arrow2: UIImageView!
@@ -58,17 +57,20 @@ class PhotoEditViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configureViews()
+        
         self.loadImage()
         
         let  cropViewWidth = min(CGRectGetWidth(self.imageHolderView.frame), CGRectGetHeight(self.imageHolderView.frame));
         self.cropView.frame = CGRectMake(0, 0, cropViewWidth, cropViewWidth);
         self.cropView.center = self.imageHolderView.center;
-//        self.cropView.layer.borderWidth = CROPVIEWBORDERWIDTH;
-//        self.cropView.layer.borderColor = UIColor.whiteColor().CGColor;
         self.resetAllArrows()
         self.resetCropMask()
         
+        
         // Do any additional setup after loading the view.
+    }
+    override func viewWillAppear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
     }
 
     override func didReceiveMemoryWarning() {
@@ -76,16 +78,6 @@ class PhotoEditViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
 private extension PhotoEditViewController{
@@ -116,7 +108,7 @@ private extension PhotoEditViewController{
     }
     private func resetCropMask() {
         let path = UIBezierPath(rect: self.cropMaskView.bounds)
-        let clearPath = UIBezierPath(rect: CGRectMake(CGRectGetMinX(self.cropView.frame) + CROPVIEWBORDERWIDTH, CGRectGetMinY(self.cropView.frame) + CROPVIEWBORDERWIDTH, CGRectGetWidth(self.cropView.frame) - 2 * CROPVIEWBORDERWIDTH, CGRectGetHeight(self.cropView.frame) - 2 * CROPVIEWBORDERWIDTH)).bezierPathByReversingPath()
+        let clearPath = UIBezierPath(rect: self.cropView.frame).bezierPathByReversingPath()
         path.appendPath(clearPath)
 
         var shapeLayer: CAShapeLayer? = self.cropMaskView.layer.mask as? CAShapeLayer
@@ -192,7 +184,7 @@ private extension PhotoEditViewController{
                 minY = CGRectGetMaxY(self.arrow2.frame) + ARROWMINIMUMSPACE;
                 minX = CGRectGetMaxX(self.arrow3.frame) + ARROWMINIMUMSPACE;
             case self.arrow5:
-                maxX = self.arrow7.frame.origin.x - 25
+                maxX = self.arrow7.frame.origin.x - self.arrow7.frame.size.width - ARROWMINIMUMSPACE
                 
                 minY = panGesture.view!.frame.origin.y
                 maxY = panGesture.view!.frame.origin.y
@@ -201,10 +193,10 @@ private extension PhotoEditViewController{
                 minX = panGesture.view!.frame.origin.x
                 maxX = panGesture.view!.frame.origin.x
             
-                minY = CGRectGetMaxY(self.arrow8.frame)
+                minY = CGRectGetMaxY(self.arrow8.frame) + ARROWMINIMUMSPACE
             
             case self.arrow7:
-                minX = CGRectGetMaxX(self.arrow5.frame)
+                minX = CGRectGetMaxX(self.arrow5.frame) + ARROWMINIMUMSPACE
                 
                 minY = panGesture.view!.frame.origin.y
                 maxY = panGesture.view!.frame.origin.y
@@ -213,7 +205,7 @@ private extension PhotoEditViewController{
                 minX = panGesture.view!.frame.origin.x
                 maxX = panGesture.view!.frame.origin.x
             
-                maxY = CGRectGetMinY(self.arrow6.frame) - 22
+                maxY = CGRectGetMinY(self.arrow6.frame) - self.arrow6.frame.size.height - ARROWMINIMUMSPACE
             
         default:
             break
@@ -232,7 +224,7 @@ private extension PhotoEditViewController{
                 frame.origin.y += endPoint.y - startPoint.memory.y
                 frame.origin.x = min(maxX, max(frame.origin.x, minX));
                 frame.origin.y = min(maxY, max(frame.origin.y, minY));
-                print(frame)
+                
                 panGesture.view!.frame = frame;
                 
                 startPoint.memory = endPoint;
@@ -328,9 +320,6 @@ private extension PhotoEditViewController{
        self.cropView.frame = CGRectMake(CGRectGetMinX(self.arrow1.frame) + ARROWBORDERWIDTH, CGRectGetMinY(self.arrow1.frame) + ARROWBORDERWIDTH, CGRectGetMaxX(self.arrow2.frame) - CGRectGetMinX(self.arrow1.frame) - ARROWBORDERWIDTH * 2, CGRectGetMaxY(self.arrow3.frame) - CGRectGetMinY(self.arrow1.frame) - ARROWBORDERWIDTH * 2);
     }
 
-    private func clickProportionBtn()  {
-    
-    }
 }
 extension PhotoEditViewController: UIScrollViewDelegate{
     func scrollViewDidScroll(scrollView: UIScrollView) {
@@ -357,7 +346,7 @@ extension PhotoEditViewController: UIScrollViewDelegate{
 private extension PhotoEditViewController{
     private func configureViews(){
         self.edgesForExtendedLayout = .None
-        self.view.backgroundColor = UIColor.whiteColor()
+        self.view.backgroundColor = UIColor.blackColor()
         
         self.view.addSubview(self.scrollView)
         self.view.addSubview(self.cropMaskView)
@@ -386,8 +375,23 @@ private extension PhotoEditViewController{
     @objc private func confirmSelectedImageBtnAction(){
         
         if let block = self.block{
-            let image = self.imageFromView(self.view, atFrame: CGRectMake(self.cropView.frame.origin.x + 2, self.cropView.frame.origin.y + 2, self.cropView.frame.size.width - 4, self.cropView.frame.size.height - 4))
-            block(image: image)
+        //获取图片位置
+        //相对于 统一坐标系的左边 关于图片的截取 一定要用相对位置去弄 否则 嘿嘿嘿!!!!!!!!!切记 血的教训 并且 第二条法则 一定要乘以 self.scrollView.zoomScale 哈哈哈
+        let rect = self.view.convertRect(self.cropView.frame, toView: self.imageHolderView)
+            
+        let scare_x = rect.origin.x/self.imageHolderView.frame.size.width
+        let x = scare_x * (self.imageHolderView.image?.size.width)! * self.scrollView.zoomScale
+            
+        let scare_y = rect.origin.y/self.imageHolderView.frame.size.height
+        let y = scare_y * (self.imageHolderView.image?.size.height)! * self.scrollView.zoomScale
+            
+        let scare_width = self.cropView.frame.size.width/self.imageHolderView.frame.size.width
+        let width = scare_width * (self.imageHolderView.image?.size.width)!
+        let scare_height = self.cropView.frame.size.height/self.imageHolderView.frame.size.height
+        let height = scare_height * (self.imageHolderView.image?.size.height)!
+ 
+       let theImage = UIImage.getSubImage(self.imageHolderView.image, mCGRect: CGRectMake(x, y,width, height))
+            block(image: theImage)
         }
         self.navigationController?.popViewControllerAnimated(true)
     }
@@ -402,8 +406,8 @@ private extension PhotoEditViewController{
         get{
             if _scrollView == nil{
                 _scrollView = UIScrollView()
-                _scrollView.frame = CGRectMake(0, 0, self.view.bounds.width, self.view.bounds.height - 64)
-                _scrollView.backgroundColor = UIColor.orangeColor()
+                _scrollView.frame = CGRectMake(0, 0, self.view.bounds.width, self.view.bounds.height - 100)
+                _scrollView.backgroundColor = UIColor.blackColor()
                 _scrollView.userInteractionEnabled = true
                 _scrollView.delegate = self
                 _scrollView.minimumZoomScale = 1
@@ -458,7 +462,7 @@ private extension PhotoEditViewController{
             if _cropView == nil{
                 _cropView = UIView()
                 _cropView.backgroundColor = UIColor.clearColor()
-                _cropView.frame = CGRectMake(10, 72, 355, 344)
+                _cropView.frame = CGRectMake(0, 0, 355, 344)
                 
                 let pan = UIPanGestureRecognizer(target: self ,action: #selector(PhotoEditViewController.moveCropView(_:)))
                 _cropView.addGestureRecognizer(pan)
@@ -637,16 +641,11 @@ private extension PhotoEditViewController{
                 
                 _blackBgView.addSubview(self.cancelSelectedImageBtn)
                 _blackBgView.addSubview(self.confirmSelectedImageBtn)
-    
-                _blackBgView.addSubview(self.testImageView)
+            
                 
                 //_cancelSelectedImageBtn
                 _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[view(==100)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _cancelSelectedImageBtn]));
                 _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==50)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _cancelSelectedImageBtn]))
-                
-                //_testImageView
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-100-[view(==80)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _testImageView]));
-                _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[view(==80)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _testImageView]))
                 
                 //_confirmSelectedImageBtn
                 _blackBgView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[view(==100)]-0-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: ["view": _confirmSelectedImageBtn]));
@@ -660,32 +659,15 @@ private extension PhotoEditViewController{
             _blackBgView = newValue
         }
     }
-    
-    private var testImageView: UIImageView {
-        get{
-            if _testImageView == nil{
-                _testImageView = UIImageView()
-                _testImageView.translatesAutoresizingMaskIntoConstraints = false
-                _testImageView.backgroundColor = UIColor.greenColor()
-                _testImageView.contentMode = .ScaleAspectFit
-            }
-            return _testImageView
-            
-        }
-        set{
-            _testImageView = newValue
-        }
-    }
-    
     private var cancelSelectedImageBtn: UIButton {
         get{
             if _cancelSelectedImageBtn == nil{
                 _cancelSelectedImageBtn = UIButton()
                 _cancelSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
-                _cancelSelectedImageBtn.backgroundColor = UIColor.orangeColor()
-                _cancelSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _cancelSelectedImageBtn.setTitle("取消", forState: .Normal)
-                _cancelSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                _cancelSelectedImageBtn.backgroundColor = UIColor.clearColor()
+                _cancelSelectedImageBtn.setTitleColor(UIColor.redColor(), forState: .Normal)
+                _cancelSelectedImageBtn.setTitle("x", forState: .Normal)
+                _cancelSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(30)
                  _cancelSelectedImageBtn.addTarget(self, action: #selector(PhotoEditViewController.cancelSelectedImageBtnAction), forControlEvents: .TouchUpInside)
             }
             return _cancelSelectedImageBtn
@@ -701,10 +683,10 @@ private extension PhotoEditViewController{
             if _confirmSelectedImageBtn == nil{
                 _confirmSelectedImageBtn = UIButton()
                 _confirmSelectedImageBtn.translatesAutoresizingMaskIntoConstraints = false
-                _confirmSelectedImageBtn.backgroundColor = UIColor.yellowColor()
-                _confirmSelectedImageBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                _confirmSelectedImageBtn.setTitle("确定", forState: .Normal)
-                _confirmSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(14)
+                _confirmSelectedImageBtn.backgroundColor = UIColor.clearColor()
+                _confirmSelectedImageBtn.setTitleColor(UIColor.greenColor(), forState: .Normal)
+                _confirmSelectedImageBtn.setTitle("√", forState: .Normal)
+                _confirmSelectedImageBtn.titleLabel?.font = UIFont.systemFontOfSize(30)
                 _confirmSelectedImageBtn.addTarget(self, action: #selector(PhotoEditViewController.confirmSelectedImageBtnAction), forControlEvents: .TouchUpInside)
             }
             return _confirmSelectedImageBtn
@@ -715,23 +697,6 @@ private extension PhotoEditViewController{
         }
     }
 
-    
-    func imageFromView(theView: UIView, atFrame: CGRect) -> UIImage {
-        var theImage: UIImage?
-        autoreleasepool {
-            UIGraphicsBeginImageContext(theView.frame.size);
-            let context = UIGraphicsGetCurrentContext();
-            CGContextSaveGState(context);
-            UIRectClip(atFrame);
-            theView.layer.renderInContext(context!)
-            theImage = UIGraphicsGetImageFromCurrentImageContext();
-            let refImage = CGImageCreateWithImageInRect(theImage!.CGImage, atFrame)
-            theImage = UIImage(CGImage: refImage!)
-            UIGraphicsEndImageContext();
-        }
-        
-        return  theImage!
-    }
     // MARK: - consraintsForSubViews
     private func consraintsForSubViews() {
         //_blackBgView
