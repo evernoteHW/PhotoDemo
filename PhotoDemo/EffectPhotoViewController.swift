@@ -79,7 +79,7 @@ class EffectPhotoViewController: UIViewController {
             case 0:
                 return originalImage;
         default:
-            return self.Image(originalImage, withEffect: effectArray[index])
+            return Image(originalImage, withEffect: effectArray[index])
         }
         
     }

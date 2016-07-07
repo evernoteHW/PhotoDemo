@@ -19,8 +19,6 @@ class ViewController: UIViewController {
         super.viewDidLoad()
            self.configureViews()
            photoArray = getAllPhotos()
-        
-        
     }
     
     override func didReceiveMemoryWarning() {
@@ -44,6 +42,7 @@ extension ViewController: PHPhotoLibraryChangeObserver{
                 if let result_ = result{
                     self.photoArray.append(result_)
                 }
+                self._collectionView.reloadData()
             }
         }
         

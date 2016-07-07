@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		740B895D1D2CBB510053A0BF /* UIImage+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 740B895C1D2CBB510053A0BF /* UIImage+Test.m */; };
+		74221CCD1D2E62DD0047385A /* DemoScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74221CCC1D2E62DD0047385A /* DemoScrollView.swift */; };
 		74A2EB3C1D2642B6005E21CB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A2EB3B1D2642B6005E21CB /* AppDelegate.swift */; };
 		74A2EB3E1D2642B6005E21CB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A2EB3D1D2642B6005E21CB /* ViewController.swift */; };
 		74A2EB411D2642B6005E21CB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 74A2EB3F1D2642B6005E21CB /* Main.storyboard */; };
@@ -61,6 +62,7 @@
 		740B89591D2CBB320053A0BF /* PhotoDemo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PhotoDemo-Bridging-Header.h"; sourceTree = "<group>"; };
 		740B895B1D2CBB510053A0BF /* UIImage+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Test.h"; sourceTree = "<group>"; };
 		740B895C1D2CBB510053A0BF /* UIImage+Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Test.m"; sourceTree = "<group>"; };
+		74221CCC1D2E62DD0047385A /* DemoScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoScrollView.swift; sourceTree = "<group>"; };
 		74A2EB381D2642B6005E21CB /* PhotoDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		74A2EB3B1D2642B6005E21CB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		74A2EB3D1D2642B6005E21CB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				740B89591D2CBB320053A0BF /* PhotoDemo-Bridging-Header.h */,
 				740B895B1D2CBB510053A0BF /* UIImage+Test.h */,
 				740B895C1D2CBB510053A0BF /* UIImage+Test.m */,
+				74221CCC1D2E62DD0047385A /* DemoScrollView.swift */,
 			);
 			path = resources;
 			sourceTree = "<group>";
@@ -364,6 +367,7 @@
 				74A2EB931D2A072F005E21CB /* SelectedImageViewController.swift in Sources */,
 				74A2EB951D2A0D19005E21CB /* EffectPhotoViewController.swift in Sources */,
 				740B895D1D2CBB510053A0BF /* UIImage+Test.m in Sources */,
+				74221CCD1D2E62DD0047385A /* DemoScrollView.swift in Sources */,
 				74A2EB3C1D2642B6005E21CB /* AppDelegate.swift in Sources */,
 				74A2EB6A1D266EFC005E21CB /* PhotoEditViewController.swift in Sources */,
 			);
