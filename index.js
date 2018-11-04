@@ -2794,7 +2794,7 @@ module.exports = __vue_exports__
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: ["wrapper"]
-  }, [_c('div', [_vm._v("111122223333322333")]), _vm._v(">\n  "), _c('web', {
+  }, [_c('div', [_vm._v("111122223333322333")]), _c('web', {
     staticClass: ["web"],
     attrs: {
       "src": "http://daikuan.51kanong.com/daikuan/lists"
